@@ -402,7 +402,8 @@ const ICON={home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-
  back:'<path d="M15 6l-6 6 6 6"/>'};
 const svg=(k,w=22)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const sized=(u,w)=>/=w\d+$/.test(u)?u.replace(/=w\d+$/,'=w'+w):u;
+/* 썸네일 크기 변환: 교체한 이미지(=w1601 등 끝자리 표시)는 썸네일 주소도 달라지게 해 예전 캐시가 보이지 않도록 함 */
+const sized=(u,w)=>{const m=u.match(/=w(\d+)$/);return m?u.replace(/=w\d+$/,'=w'+(w+(+m[1]%10))):u};
 
 /* 상단 고정 영역 높이 → 스크롤 위치·슬라이드 높이 계산에 사용 */
 function syncChrome(){document.documentElement.style.setProperty('--chromeH',$('#chrome').offsetHeight+'px')}

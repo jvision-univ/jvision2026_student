@@ -260,6 +260,14 @@ html.embed .tabs a.on::before{top:auto;bottom:0;border-radius:3px 3px 0 0}
 .imgbtns.home .imgbtn{background:#fff}
 .imgbtns.home .imgbtn img{transform:translateY(var(--y,0%))}
 </style>
+<!-- 구글 애널리틱스(GA4): 측정 ID 2개 동시 수집 — 메뉴 이동마다 조회(page_view) 기록 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PBK12DT3HB"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());
+var GA_IDS=['G-PBK12DT3HB','G-S1P14JW18H'];
+GA_IDS.forEach(function(id){gtag('config',id,{send_page_view:false});});
+</script>
 </head>
 <body>
 <div class="chrome" id="chrome">
@@ -538,8 +546,24 @@ function route(){
   const [aid,uid]=CUR.split('/').filter(Boolean);
   const a=AREAS.find(x=>x.id===aid);
   if(!a)viewHome();else if(uid){const u=(a.units||[]).find(x=>x.id===uid);u?viewSlides(a,u):viewArea(a)}else viewArea(a);
-  syncChrome();scrollTo(0,0);
+  syncChrome();scrollTo(0,0);trackView();
 }
+/* 조회수 기록: 화면(메뉴·세부과제)이 바뀔 때마다 GA4에 page_view 전송 */
+let LAST_PV='';
+function trackView(){
+  try{
+    if(typeof gtag!=='function')return;
+    const [aid,uid]=CUR.split('/').filter(Boolean);
+    const a=AREAS.find(x=>x.id===aid),u=a&&uid?(a.units||[]).find(x=>x.id===uid):null;
+    const name=!a?'홈':(u?a.name+' > '+u.name:a.name);
+    const key=CUR||'home';if(key===LAST_PV)return;LAST_PV=key;
+    const base=location.origin+location.pathname;
+    gtag('event','page_view',{page_title:name+' | 혁신지원사업 성과공유회',page_location:base+(CUR?'?menu='+encodeURIComponent(CUR):''),page_path:location.pathname+(CUR?'?menu='+CUR:'')});
+  }catch(e){}
+}
+document.addEventListener('click',e=>{const a=e.target.closest('a[target="_blank"]');if(!a||typeof gtag!=='function')return;
+  try{gtag('event','click_outbound',{link_url:a.href,link_text:(a.getAttribute('aria-label')||a.textContent||'').trim().slice(0,60)})}catch(err){}});
+
 try{history.replaceState({p:CUR},'')}catch(err){}
 route();
 </script>
